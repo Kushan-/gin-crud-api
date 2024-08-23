@@ -1,0 +1,2 @@
+GET http://localhost:7156/events
+content-type: application/json

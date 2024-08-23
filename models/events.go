@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	db "example.com/gin-go-api/sql-db"
@@ -12,7 +13,7 @@ type Event struct {
 	Name        string    `json:"name" binding:"required"`
 	Description string    `json:"description" binding:"required"`
 	Location    string    `json:"location" binding:"required"`
-	DateTime    time.Time `json:"date_time" binding:"required" time_format:"2006-01-02T15:04:05Z07:00"`
+	DateTime    time.Time `json:"date_time" binding:"required"`
 	UserId      int64
 }
 
@@ -23,16 +24,32 @@ func (e Event) SaveToQL() error {
 	query := `
 	INSERT INTO events(name, description, location, dateTime, user_id)
 	VALUES (?, ?, ?, ?, ?)`
+	fmt.Println("SQL_DB vaal->>>>>>>>>>>", db.SQL_DB)
 	cmd, err := db.SQL_DB.Prepare(query)
 	if err != nil {
+		fmt.Println("ERR while -PREPARING== to QL", err)
 		return err
 	}
 	defer cmd.Close()
-	result, err := cmd.Exec(e.Name, e.Description, e.Location, e.DateTime, e.UserId)
+
+	// Generate the next user_id
+	var maxUserID int64
+	err = db.SQL_DB.QueryRow("SELECT IFNULL(MAX(user_id), 0) + 1 FROM events").Scan(&maxUserID)
 	if err != nil {
+		fmt.Println("Failed to generate user_id", err)
+		return err
+	}
+	e.UserId = maxUserID
+
+	e.DateTime = time.Now() // Just an example; in real cases, you'll parse the DateTime from the JSON
+
+	result, err := cmd.Exec(e.Name, e.Description, e.Location, e.DateTime.Format(time.RFC3339), e.UserId)
+	if err != nil {
+		fmt.Println("ERR while --EXECUTING++== to QL", err)
 		return err
 	}
 	id, err := result.LastInsertId()
+	fmt.Println("=>, id", id)
 	e.ID = id
 
 	events = append(events, e)
@@ -41,9 +58,11 @@ func (e Event) SaveToQL() error {
 }
 
 func GetAllEvents() ([]Event, error) {
-	query := "SELEC*FROM events"
+	query := "SELECT*FROM events"
+	fmt.Println("SQL_DB vaal->>>>>>>>>>>", db.SQL_DB)
 	rows, err := db.SQL_DB.Query(query)
 	if err != nil {
+		fmt.Println("query err->", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -52,13 +71,28 @@ func GetAllEvents() ([]Event, error) {
 
 	for rows.Next() {
 		var event Event
-		err := rows.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime)
+		var dateTimeStr string
+		fmt.Println(rows)
+		err := rows.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &dateTimeStr, &event.UserId)
 
 		if err != nil {
+			fmt.Println("Scan err->", err)
 			return nil, err
+		}
+		event.DateTime, err = time.Parse(time.RFC3339, dateTimeStr)
+		if err != nil {
+			log.Println("Date parsing error:", err)
 		}
 		events = append(events, event)
 	}
 
 	return event, nil
+}
+
+func handleError(stmt string, err error) error {
+	if err != nil {
+		fmt.Printf("%v err ocurred %v", stmt, err)
+		return err
+	}
+	return nil
 }

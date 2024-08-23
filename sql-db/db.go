@@ -11,13 +11,14 @@ var SQL_DB *sql.DB
 
 func InitDb() {
 	var err error
-	SQL_DB, err = sql.Open("sqlite", "./api.sql")
+	SQL_DB, err = sql.Open("sqlite", "events.db")
 	fmt.Println("=================")
 	fmt.Println(SQL_DB)
 	fmt.Println("=================")
 	if err != nil {
 		// panic("Could not connext to SQL DB \n" +  err ) // crash eit
 		fmt.Println("Could not connect to sql", err)
+		return
 	}
 	fmt.Println("Connection eastablished with SQL")
 

@@ -20,10 +20,11 @@ func main() {
 	server.GET("/events", getEvents)
 	server.POST("/events", createEvent)
 	server.GET("/dbConn", dbConnect)
-
+	db.InitDb()
 	if err := server.Run(":7156"); err != nil {
 		panic("Failed to start the server: " + err.Error())
 	}
+
 }
 
 func dbConnect(cntx *gin.Context) {
@@ -76,14 +77,9 @@ func createEvent(cntx *gin.Context) {
 		return
 	}
 
-	event.ID = 1
-	event.UserId = 1
-
-	fmt.Println(event.ID, event.UserId)
-
-	payload := cntx.Params
+	payload := cntx.Request.Body
 	fmt.Println(payload)
-	fmt.Println("Reqs->>>", cntx.Request)
+	//fmt.Println("Reqs->>>", cntx.Request)
 
 	err = event.SaveToQL()
 
