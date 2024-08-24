@@ -1,2 +1,2 @@
-DELETE  ttp://localhost:8080/events/0
+DELETE  http://localhost:7156/events/0
 content-type: application/json

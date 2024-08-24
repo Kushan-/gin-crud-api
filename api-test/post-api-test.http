@@ -2,8 +2,8 @@ POST http://localhost:7156/events
 content-type: application/json
 
 {
-    "name": "Music Festival",
-    "description": "A weekend-long music festival featuring various bands.",
+    "name": "Some bad event test",
+    "description": "some bad event description test.",
     "location": "Austin, TX",
     "date_time": "2024-11-10T12:00:00Z"
 }

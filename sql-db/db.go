@@ -11,7 +11,7 @@ var SQL_DB *sql.DB
 
 func InitDb() {
 	var err error
-	SQL_DB, err = sql.Open("sqlite", "events.db")
+	SQL_DB, err = sql.Open("sqlite", "./sql-db/events.db")
 	fmt.Println("=================")
 	fmt.Println(SQL_DB)
 	fmt.Println("=================")
@@ -28,6 +28,22 @@ func InitDb() {
 }
 
 func createTables() {
+	createUSerTable := `
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        );
+        
+	`
+
+	result, err := SQL_DB.Exec(createUSerTable)
+	if err != nil {
+		fmt.Println("Could not create user Table", err)
+		return
+	}
+	fmt.Println("USER ---- Table created ->>>", result)
+
 	createEventTable := `
 	CREATE TABLE IF NOT EXISTS events (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,14 +51,15 @@ func createTables() {
 		description TEXT NOT NULL,
 		location TEXT NOT NULL,
 		dateTime TEXT NOT NULL,
-		user_id INTEGER
+		user_id INTEGER,
+		FOREIGN KEY(user_id) REFERENCES users(id)
 	)
 		`
 
-	result, err := SQL_DB.Exec(createEventTable)
+	result, err = SQL_DB.Exec(createEventTable)
 	if err != nil {
 		fmt.Println("Could not create event Table", err)
 		return
 	}
-	fmt.Println("Table created ->>>", result)
+	fmt.Println("EVENTS  --- Table created ->>>", result)
 }
