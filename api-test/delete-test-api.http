@@ -1,0 +1,2 @@
+DELETE  ttp://localhost:8080/events/0
+content-type: application/json

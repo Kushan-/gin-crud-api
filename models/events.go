@@ -57,7 +57,7 @@ func (e Event) SaveToQL() error {
 	return err
 }
 
-func GetAllEvents() ([]Event, error) {
+func GetAllQLEvents() ([]Event, error) {
 	query := "SELECT*FROM events"
 	fmt.Println("SQL_DB vaal->>>>>>>>>>>", db.SQL_DB)
 	rows, err := db.SQL_DB.Query(query)
@@ -67,26 +67,78 @@ func GetAllEvents() ([]Event, error) {
 	}
 	defer rows.Close()
 
-	var event []Event
+	var events []Event
 
 	for rows.Next() {
-		var event Event
+		var tmpEvent Event
 		var dateTimeStr string
 		fmt.Println(rows)
-		err := rows.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &dateTimeStr, &event.UserId)
+		err := rows.Scan(&tmpEvent.ID, &tmpEvent.Name, &tmpEvent.Description, &tmpEvent.Location, &dateTimeStr, &tmpEvent.UserId)
 
 		if err != nil {
 			fmt.Println("Scan err->", err)
 			return nil, err
 		}
-		event.DateTime, err = time.Parse(time.RFC3339, dateTimeStr)
+		tmpEvent.DateTime, err = time.Parse(time.RFC3339, dateTimeStr)
 		if err != nil {
 			log.Println("Date parsing error:", err)
 		}
-		events = append(events, event)
+		events = append(events, tmpEvent)
+	}
+	fmt.Println(events)
+
+	return events, nil
+}
+
+func GetQLEventsById(id int64) (*Event, error) {
+	query := "SELECT * FROM events WHERE id = ?"
+	row := db.SQL_DB.QueryRow(query, id)
+
+	var event Event
+	var dateTimeStr string
+	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &dateTimeStr, &event.UserId)
+	if err != nil {
+		return nil, err
+	}
+	event.DateTime, err = time.Parse(time.RFC3339, dateTimeStr)
+
+	return &event, nil
+
+}
+
+func (e Event) UpdateQLEvent(id int64) error {
+
+	query := `UPDATE events 
+	SET user_id=?, name=?, description=?, location=?, dateTime=?
+	WHERE id = ?`
+
+	stmt, err := db.SQL_DB.Prepare(query)
+
+	if err != nil {
+		fmt.Println("Prepare query ERR->", err)
+		return err
 	}
 
-	return event, nil
+	defer stmt.Close()
+	result, err := stmt.Exec(e.UserId, e.Name, e.Description, e.Location, e.DateTime.Format(time.RFC3339), id)
+	if err != nil {
+		fmt.Printf("error while execution UPDATE query with %v with ERR->> %v", id, err)
+		return err
+	}
+	fmt.Println(result)
+	return nil
+}
+
+func (e Event) DeleteQLEvent(id int64) error {
+	deleteEventSQL := `DELETE FROM events WHERE id = ?`
+	result, err := db.SQL_DB.Exec(deleteEventSQL, id)
+	if err != nil {
+		fmt.Println("Err while delete from QL, ERR-->>", err)
+		return err
+	}
+	fmt.Println(result)
+	return nil
+
 }
 
 func handleError(stmt string, err error) error {
