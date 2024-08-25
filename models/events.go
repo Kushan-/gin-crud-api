@@ -19,7 +19,7 @@ type Event struct {
 
 var events = []Event{}
 
-func (e Event) SaveToQL() error {
+func (e *Event) SaveToQL() error {
 	// use waitgroup
 	query := `
 	INSERT INTO events(name, description, location, dateTime, user_id)
@@ -33,13 +33,13 @@ func (e Event) SaveToQL() error {
 	defer cmd.Close()
 
 	// Generate the next user_id
-	var maxUserID int64
-	err = db.SQL_DB.QueryRow("SELECT IFNULL(MAX(user_id), 0) + 1 FROM events").Scan(&maxUserID)
-	if err != nil {
-		fmt.Println("Failed to generate user_id", err)
-		return err
-	}
-	e.UserId = maxUserID
+	// var maxUserID int64
+	// err = db.SQL_DB.QueryRow("SELECT IFNULL(MAX(user_id), 0) + 1 FROM events").Scan(&maxUserID)
+	// if err != nil {
+	// 	fmt.Println("Failed to generate user_id", err)
+	// 	return err
+	// }
+	// e.UserId = maxUserID
 
 	e.DateTime = time.Now() // Just an example; in real cases, you'll parse the DateTime from the JSON
 
@@ -52,8 +52,10 @@ func (e Event) SaveToQL() error {
 	fmt.Println("=>, id", id)
 	e.ID = id
 
-	events = append(events, e)
-	fmt.Println(events)
+	//events = append(events, *e)
+	fmt.Println("e->>")
+	fmt.Println(e)
+	fmt.Println("->>")
 	return err
 }
 

@@ -42,12 +42,12 @@ func (u User) SaveToQL() error {
 
 }
 
-func (u User) ValidateCreds() error {
-	query := "SELECT password FROM users WHERE email = ?"
+func (u *User) ValidateCreds() error {
+	query := "SELECT id, password FROM users WHERE email = ?"
 	row := db.SQL_DB.QueryRow(query, u.Email)
 
 	var retrivePassword string
-	err := row.Scan(&retrivePassword)
+	err := row.Scan(&u.ID, &retrivePassword)
 	if err != nil {
 		fmt.Println("VALIDATE CREDS ->>", err)
 		return err

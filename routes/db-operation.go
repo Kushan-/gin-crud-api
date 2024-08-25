@@ -39,6 +39,7 @@ func getEvents(cntx *gin.Context) {
 }
 
 func createEvent(cntx *gin.Context) {
+	userId := cntx.GetInt64("userId")
 
 	bodyBytes, err := io.ReadAll(cntx.Request.Body)
 
@@ -69,6 +70,7 @@ func createEvent(cntx *gin.Context) {
 	fmt.Println(payload)
 	//fmt.Println("Reqs->>>", cntx.Request)
 
+	event.UserId = userId
 	err = event.SaveToQL()
 
 	if err != nil {

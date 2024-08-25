@@ -1,9 +1,10 @@
 POST http://localhost:7156/events
 content-type: application/json
+authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QwM0BleGFtcGxlMDQuY29tIiwiZXhwIjoxNzI0NTU2NTA3LCJ1c2VySWQiOjB9.z6Haa_wHSQSs8xvuFlJ0uNPNWmEwhWV-3E-iUT4bX0Y
 
 {
-    "name": "Some bad event test",
-    "description": "some bad event description test.",
+    "name": "Some bad event test with token 01",
+    "description": "some bad event description token test.",
     "location": "Austin, TX",
     "date_time": "2024-11-10T12:00:00Z"
 }
